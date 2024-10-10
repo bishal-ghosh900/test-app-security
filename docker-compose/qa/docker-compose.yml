@@ -1,4 +1,17 @@
 services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.0
+    container_name: keycloak
+    ports:
+      - 8111:8080
+    command:
+      - start-dev
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    networks:
+      - host
+
   read:
     image: grafana/loki:3.1.0
     command: "-config.file=/etc/loki/config.yaml -target=read"
@@ -212,7 +225,7 @@ services:
     container_name: test1-config
     image: ghoshbishal/test1-config:latest
     ports:
-      - 8070:8070
+      - 8070
     healthcheck:
       test: curl http://configserver:8070/actuator/health/readiness | grep "UP" || exit 1
       retries: 20
@@ -232,7 +245,7 @@ services:
     container_name: eurekaserver
     image: ghoshbishal/eureka-server:latest
     ports:
-      - 8090:8090
+      - 8090
     healthcheck:
       test: curl http://eurekaserver:8090/actuator/health/readiness | grep UP || exit 1
       retries: 20
@@ -255,7 +268,7 @@ services:
     container_name: test1
     image: ghoshbishal/test1:latest
     ports:
-      - 8080:8080
+      - 8080
     healthcheck:
       test: curl http://test1:8080/actuator/health/readiness | grep UP || exit 1
       retries: 20
@@ -278,7 +291,7 @@ services:
     container_name: test2
     image: ghoshbishal/test2:latest
     ports:
-      - 8081:8081
+      - 8081
     healthcheck:
       test: curl http://test2:8081/actuator/health/readiness | grep UP || exit 1
       retries: 20
@@ -304,6 +317,7 @@ services:
     environment:
       SPRING_APPLICATION_NAME: gatewayserver
       OTEL_SERVICE_NAME: gatewayserver
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI: http://keycloak:8080/realms/master/protocol/openid-connect/certs
     ports:
       - 8060:8060
     extends:
